@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Azure Container Apps Workshop - Chapter 1 title slide</title>
+  <desc id="desc">Title slide for Chapter 1 Introduction to Containers by Johnny Hooyberghs, april 2026.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#081b33"/>
+      <stop offset="55%" stop-color="#0f3d78"/>
+      <stop offset="100%" stop-color="#1f6feb"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#93c5fd"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <circle cx="1580" cy="160" r="250" fill="#60a5fa" fill-opacity="0.14"/>
+  <circle cx="1710" cy="910" r="330" fill="#38bdf8" fill-opacity="0.10"/>
+  <rect x="140" y="160" width="160" height="10" rx="5" fill="url(#accent)"/>
+  <rect x="140" y="840" width="520" height="4" rx="2" fill="#dbeafe" fill-opacity="0.5"/>
+
+  <text x="140" y="315" fill="#e0f2fe" font-family="Segoe UI, Arial, sans-serif" font-size="82" font-weight="700" letter-spacing="1">
+    Azure Container Apps Workshop
+  </text>
+  <text x="140" y="405" fill="#99f6e4" font-family="Segoe UI, Arial, sans-serif" font-size="40" font-weight="600" letter-spacing="6">
+    april 2026
+  </text>
+  <text x="140" y="560" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="60" font-weight="600">
+    Chapter 1 - Introduction to Containers
+  </text>
+  <text x="140" y="690" fill="#dbeafe" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="500">
+    by Johnny Hooyberghs
+  </text>
+</svg>

@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Here's Johnny - introduction slide</title>
+  <desc id="desc">A short presentation slide for Johnny Hooyberghs with role highlights and contact details.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#081b33"/>
+      <stop offset="55%" stop-color="#0f3d78"/>
+      <stop offset="100%" stop-color="#1f6feb"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#5eead4"/>
+      <stop offset="100%" stop-color="#93c5fd"/>
+    </linearGradient>
+    <linearGradient id="panelStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#93c5fd" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#5eead4" stop-opacity="0.2"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#021124" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+  <circle cx="1580" cy="160" r="250" fill="#60a5fa" fill-opacity="0.14"/>
+  <circle cx="1710" cy="910" r="330" fill="#38bdf8" fill-opacity="0.10"/>
+  <circle cx="340" cy="920" r="200" fill="#5eead4" fill-opacity="0.07"/>
+  <rect x="140" y="120" width="160" height="10" rx="5" fill="url(#accent)"/>
+
+  <text x="140" y="250" fill="#e0f2fe" font-family="Segoe UI, Arial, sans-serif" font-size="78" font-weight="700" letter-spacing="1">
+    Here's Johnny
+  </text>
+
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <circle cx="160" cy="370" r="10" fill="#5eead4"/>
+    <text x="195" y="382" fill="#ffffff" font-size="42" font-weight="600">Passionate developer</text>
+
+    <circle cx="160" cy="460" r="10" fill="#5eead4"/>
+    <text x="195" y="472" fill="#ffffff" font-size="42" font-weight="600">Principle Software consultant/Architect (.NET)</text>
+
+    <circle cx="160" cy="550" r="10" fill="#5eead4"/>
+    <text x="195" y="562" fill="#ffffff" font-size="42" font-weight="600">Microsoft MVP: Developer Technologies &amp; Azure</text>
+
+    <circle cx="160" cy="640" r="10" fill="#5eead4"/>
+    <text x="195" y="652" fill="#ffffff" font-size="42" font-weight="600">Operational Manager at Involved</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="1180" y="170" width="560" height="700" rx="34" fill="#0b1f3f" fill-opacity="0.6" stroke="url(#panelStroke)" stroke-width="2"/>
+  </g>
+
+  <g transform="translate(1460 300)">
+    <circle cx="0" cy="0" r="108" fill="#dbeafe" fill-opacity="0.12" stroke="#93c5fd" stroke-opacity="0.45" stroke-width="3"/>
+    <circle cx="0" cy="-28" r="42" fill="#99f6e4" fill-opacity="0.9"/>
+    <path d="M -72 86 C -72 34 -40 8 0 8 C 40 8 72 34 72 86" fill="#99f6e4" fill-opacity="0.9"/>
+  </g>
+
+  <text x="1270" y="510" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700">Johnny Hooyberghs</text>
+  <text x="1270" y="558" fill="#99f6e4" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" letter-spacing="4">contact</text>
+
+  <g transform="translate(1260 620)" font-family="Segoe UI, Arial, sans-serif">
+    <g transform="translate(0 0)">
+      <circle cx="0" cy="0" r="28" fill="#0f3d78" stroke="#93c5fd" stroke-width="2"/>
+      <path d="M -14 -8 L 0 4 L 14 -8" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="-14" y="-10" width="28" height="20" rx="4" fill="none" stroke="#ffffff" stroke-width="3"/>
+      <text x="52" y="-6" fill="#dbeafe" font-size="22" font-weight="600">email</text>
+      <text x="52" y="23" fill="#ffffff" font-size="26">johnny.hooyberghs@involved-it.be</text>
+    </g>
+
+    <g transform="translate(0 110)">
+      <rect x="-28" y="-28" width="56" height="56" rx="14" fill="#0a66c2"/>
+      <circle cx="-8" cy="-8" r="4" fill="#ffffff"/>
+      <rect x="-12" y="-2" width="8" height="18" fill="#ffffff"/>
+      <path d="M 0 16 L 0 -2 L 8 -2 C 16 -2 18 2 18 9 L 18 16 L 10 16 L 10 9 C 10 6 8 5 6 5 L 0 5" fill="#ffffff"/>
+      <text x="52" y="-6" fill="#dbeafe" font-size="22" font-weight="600">linkedin</text>
+      <text x="52" y="23" fill="#ffffff" font-size="26">Johnny Hooyberghs</text>
+    </g>
+
+    <g transform="translate(0 220)">
+      <circle cx="0" cy="0" r="28" fill="#0284c7"/>
+      <path d="M -16 2 C -9 -12 -1 -10 0 -2 C 1 -10 9 -12 16 2 C 8 -1 4 8 0 12 C -4 8 -8 -1 -16 2 Z" fill="#ffffff"/>
+      <text x="52" y="-6" fill="#dbeafe" font-size="22" font-weight="600">bluesky</text>
+      <text x="52" y="23" fill="#ffffff" font-size="26">@djohnnie.joho.me</text>
+    </g>
+  </g>
+
+  <rect x="140" y="885" width="620" height="4" rx="2" fill="#dbeafe" fill-opacity="0.5"/>
+</svg>
