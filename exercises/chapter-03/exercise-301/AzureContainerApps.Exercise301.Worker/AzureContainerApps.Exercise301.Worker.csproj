@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseAspire Condition="'$(UseAspire)' == ''">true</UseAspire>
+    <DefineConstants Condition="'$(UseAspire)' == 'true'">$(DefineConstants);ASPIRE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(UseAspire)' == 'true'">
+    <ProjectReference Include="../AzureContainerApps.Exercise301.ServiceDefaults/AzureContainerApps.Exercise301.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+</Project>

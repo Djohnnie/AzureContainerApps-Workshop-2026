@@ -27,4 +27,6 @@ Welcome to the **Azure Container Apps Workshop** exercises. Work through each ex
 
 ## Chapter 03 — Stateful scalable services using Microsoft Orleans
 
-> 🚧 **Coming soon** — exercises for this chapter are in preparation.
+| # | Exercise | Description |
+|---|----------|-------------|
+| 1 | [Exercise 301 — Orleans Cluster on Azure Container Apps](chapter-03/exercise-301/README.md) | Deploy an Orleans silo host, an API client, and a load-generator worker to demonstrate stateful scalable services with Orleans Table Storage clustering |

@@ -19,6 +19,14 @@
     <Project Path="exercises/chapter-02/exercise-203/AzureContainerApps.Exercise203.Api/AzureContainerApps.Exercise203.Api.csproj" />
     <Project Path="exercises/chapter-02/exercise-203/AzureContainerApps.Exercise203.Worker/AzureContainerApps.Exercise203.Worker.csproj" />
   </Folder>
+  <Folder Name="/exercises/chapter-03/" />
+  <Folder Name="/exercises/chapter-03/exercise-301/">
+    <Project Path="exercises/chapter-03/exercise-301/AzureContainerApps.Exercise301.Orleans.Host/AzureContainerApps.Exercise301.Orleans.Host.csproj" />
+    <Project Path="exercises/chapter-03/exercise-301/AzureContainerApps.Exercise301.Api/AzureContainerApps.Exercise301.Api.csproj" />
+    <Project Path="exercises/chapter-03/exercise-301/AzureContainerApps.Exercise301.Worker/AzureContainerApps.Exercise301.Worker.csproj" />
+    <Project Path="exercises/chapter-03/exercise-301/AzureContainerApps.Exercise301.AppHost/AzureContainerApps.Exercise301.AppHost.csproj" />
+    <Project Path="exercises/chapter-03/exercise-301/AzureContainerApps.Exercise301.ServiceDefaults/AzureContainerApps.Exercise301.ServiceDefaults.csproj" />
+  </Folder>
   <Folder Name="/lab-project/" />
   <Folder Name="/lab-project/lab-01/">
     <Project Path="lab-project/lab-01/src/UltimateSnake.AppHost/UltimateSnake.AppHost.csproj" />
