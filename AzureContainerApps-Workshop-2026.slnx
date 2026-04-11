@@ -34,6 +34,15 @@
     <Project Path="exercises/chapter-03/exercise-302/AzureContainerApps.Exercise302.AppHost/AzureContainerApps.Exercise302.AppHost.csproj" />
     <Project Path="exercises/chapter-03/exercise-302/AzureContainerApps.Exercise302.ServiceDefaults/AzureContainerApps.Exercise302.ServiceDefaults.csproj" />
   </Folder>
+  <Folder Name="/exercises/chapter-04/" />
+  <Folder Name="/exercises/chapter-04/exercise-401/">
+    <Project Path="exercises/chapter-04/exercise-401/AzureContainerApps.Exercise401.Orleans.Host/AzureContainerApps.Exercise401.Orleans.Host.csproj" />
+    <Project Path="exercises/chapter-04/exercise-401/AzureContainerApps.Exercise401.Orleans.Scaler/AzureContainerApps.Exercise401.Orleans.Scaler.csproj" />
+    <Project Path="exercises/chapter-04/exercise-401/AzureContainerApps.Exercise401.Api/AzureContainerApps.Exercise401.Api.csproj" />
+    <Project Path="exercises/chapter-04/exercise-401/AzureContainerApps.Exercise401.Worker/AzureContainerApps.Exercise401.Worker.csproj" />
+    <Project Path="exercises/chapter-04/exercise-401/AzureContainerApps.Exercise401.AppHost/AzureContainerApps.Exercise401.AppHost.csproj" />
+    <Project Path="exercises/chapter-04/exercise-401/AzureContainerApps.Exercise401.ServiceDefaults/AzureContainerApps.Exercise401.ServiceDefaults.csproj" />
+  </Folder>
   <Folder Name="/lab-project/" />
   <Folder Name="/lab-project/lab-01/">
     <Project Path="lab-project/lab-01/src/UltimateSnake.AppHost/UltimateSnake.AppHost.csproj" />
