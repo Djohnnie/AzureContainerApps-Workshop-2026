@@ -16,6 +16,9 @@ param webContainerImage string
 @description('The fully qualified API container image name (e.g. myregistry.azurecr.io/myimage:tag).')
 param apiContainerImage string
 
+@description('The name of the shared Managed Identity used by both Container Apps.')
+param managedIdentityName string
+
 @description('The location for all resources.')
 param location string = resourceGroup().location
 
@@ -24,7 +27,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' e
 }
 
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: '${webAppName}-identity'
+  name: managedIdentityName
   location: location
 }
 
@@ -33,13 +36,12 @@ var acrPullRoleDefinitionId = subscriptionResourceId(
   '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 )
 
-resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(containerRegistry.id, managedIdentity.id, acrPullRoleDefinitionId)
-  scope: containerRegistry
-  properties: {
-    roleDefinitionId: acrPullRoleDefinitionId
+module acrPullRoleAssignment 'roleAssignment.bicep' = {
+  name: 'acrPullRoleAssignment'
+  params: {
     principalId: managedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
+    roleDefinitionId: acrPullRoleDefinitionId
+    containerRegistryName: containerRegistryName
   }
 }
 

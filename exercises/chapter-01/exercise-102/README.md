@@ -109,6 +109,7 @@ az deployment group create \
   --resource-group <your-resource-group> \
   --template-file deployment/main.bicep \
   --parameters containerAppName=<app-name> \
+               managedIdentityName=<identity-name> \
                containerAppEnvironmentName=<env-name> \
                containerRegistryName=<registry-name> \
                containerImage=<your-registry>.azurecr.io/azure-container-apps-exercise-102:latest
@@ -118,6 +119,7 @@ az deployment group create \
 |-----------|-------------|
 | `--resource-group` | Name of the existing Azure resource group to deploy into |
 | `containerAppName` | Name to give the new Container App |
+| `managedIdentityName` | Name for the user-assigned managed identity (e.g. `aca-exercise-102-identity`) |
 | `containerAppEnvironmentName` | Name for the Container App Environment (created if it does not exist) |
 | `containerRegistryName` | Name of the existing Azure Container Registry (without `.azurecr.io`) |
 | `containerImage` | Fully qualified container image reference (e.g. `myregistry.azurecr.io/myimage:tag`) |

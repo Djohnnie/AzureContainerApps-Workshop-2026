@@ -20,3 +20,4 @@ Welcome to the **Azure Container Apps Workshop** exercises. Work through each ex
 | # | Exercise | Description |
 |---|----------|-------------|
 | 1 | [Exercise 201 — Multi-Container App with internal API](chapter-02/exercise-201/README.md) | Connect a web front end and a minimal API back end using an environment variable, and observe the API container hostname from the web page |
+| 2 | [Exercise 202 — Multi-Revision App with Traffic Splitting](chapter-02/exercise-202/README.md) | Deploy two revisions of a web app with different background colors and split traffic 25% / 75% using Azure Container Apps multi-revision mode |

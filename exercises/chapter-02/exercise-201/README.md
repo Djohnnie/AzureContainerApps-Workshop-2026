@@ -124,6 +124,7 @@ az deployment group create \
   --template-file deployment/main.bicep \
   --parameters webAppName=<web-app-name> \
                apiAppName=<api-app-name> \
+               managedIdentityName=<identity-name> \
                containerAppEnvironmentName=<env-name> \
                containerRegistryName=<registry-name> \
                webContainerImage=<your-registry>.azurecr.io/azure-container-apps-exercise-201-web:latest \
@@ -135,6 +136,7 @@ az deployment group create \
 | `--resource-group` | Name of the existing Azure resource group to deploy into |
 | `webAppName` | Name to give the Web Container App (external ingress) |
 | `apiAppName` | Name to give the API Container App (internal ingress only) |
+| `managedIdentityName` | Name for the shared user-assigned managed identity used by both apps to pull images from ACR (e.g. `aca-exercise-201-identity`) |
 | `containerAppEnvironmentName` | Name for the shared Container App Environment (created if it does not exist) |
 | `containerRegistryName` | Name of the Azure Container Registry (without `.azurecr.io`) |
 | `webContainerImage` | Fully qualified image name for the web app (e.g. `myregistry.azurecr.io/azure-container-apps-exercise-201-web:latest`) |

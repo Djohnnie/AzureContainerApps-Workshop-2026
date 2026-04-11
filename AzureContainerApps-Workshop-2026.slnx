@@ -12,6 +12,9 @@
     <Project Path="exercises/chapter-02/exercise-201/AzureContainerApps.Exercise201.Api/AzureContainerApps.Exercise201.Api.csproj" />
     <Project Path="exercises/chapter-02/exercise-201/AzureContainerApps.Exercise201.Web/AzureContainerApps.Exercise201.Web.csproj" />
   </Folder>
+  <Folder Name="/exercises/chapter-02/exercise-202/">
+    <Project Path="exercises/chapter-02/exercise-202/AzureContainerApps.Exercise202/AzureContainerApps.Exercise202.csproj" />
+  </Folder>
   <Folder Name="/lab-project/" />
   <Folder Name="/lab-project/lab-01/">
     <Project Path="lab-project/lab-01/src/UltimateSnake.AppHost/UltimateSnake.AppHost.csproj" />

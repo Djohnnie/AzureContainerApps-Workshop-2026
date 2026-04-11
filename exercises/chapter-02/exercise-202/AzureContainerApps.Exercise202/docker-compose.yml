@@ -1,0 +1,8 @@
+services:
+  app:
+    build: .
+    image: azure-container-apps-exercise-202:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - BACKGROUND_COLOR=darkblue
