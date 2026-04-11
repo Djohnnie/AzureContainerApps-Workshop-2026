@@ -377,6 +377,83 @@ To stop, press **Ctrl+C** in the terminal.
 
 ---
 
+## Deploying to Azure Container Apps
+
+The `deployment/main.bicep` file deploys both services to Azure Container Apps:
+
+| Service | Container App | Ingress |
+|---------|--------------|---------|
+| Backend API | `apiAppName` | **Internal** — reachable only within the environment |
+| Blazor Frontend | `frontendAppName` | **External** — publicly accessible |
+
+The frontend's `API_BASE_URL` environment variable is automatically wired to the API's internal FQDN by Bicep, mirroring the Docker Compose `API_BASE_URL=http://api:8080` setup.
+
+### Prerequisites
+
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed
+- Logged in to Azure (`az login`)
+- An existing Azure resource group and Azure Container Registry
+
+### 1. Push the images to a registry
+
+Open a terminal in the `lab-02` folder and build both images directly in ACR:
+
+```bash
+# Backend API
+az acr build \
+  --registry <your-registry> \
+  --image ultimate-snake-lab02-api:latest \
+  src/UltimateSnake.Backend.Api
+
+# Blazor Frontend
+az acr build \
+  --registry <your-registry> \
+  --image ultimate-snake-lab02-frontend:latest \
+  src
+```
+
+### 2. Run the Bicep deployment
+
+```bash
+az deployment group create \
+  --resource-group <your-resource-group> \
+  --template-file deployment/main.bicep \
+  --parameters frontendAppName=<frontend-app-name> \
+               apiAppName=<api-app-name> \
+               containerAppEnvironmentName=<env-name> \
+               containerRegistryName=<registry-name> \
+               managedIdentityName=<identity-name> \
+               frontendContainerImage=<your-registry>.azurecr.io/ultimate-snake-lab02-frontend:latest \
+               apiContainerImage=<your-registry>.azurecr.io/ultimate-snake-lab02-api:latest
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `frontendAppName` | Name to give the frontend Container App |
+| `apiAppName` | Name to give the backend API Container App |
+| `containerAppEnvironmentName` | Name for the Container App Environment (created if it does not exist) |
+| `containerRegistryName` | Name of the existing Azure Container Registry (without `.azurecr.io`) |
+| `managedIdentityName` | Name of the user-assigned managed identity to create |
+| `frontendContainerImage` | Fully qualified frontend image reference |
+| `apiContainerImage` | Fully qualified API image reference |
+
+The Bicep file:
+- Creates a **user-assigned managed identity** with `AcrPull` on the registry for both apps
+- Deploys the **API** with internal-only ingress (not publicly reachable)
+- Deploys the **frontend** with external ingress and sets `API_BASE_URL` to the API's internal FQDN
+
+### 3. Open the deployed app
+
+Once the deployment completes, the frontend FQDN is printed as an output:
+
+```
+https://<frontendFqdn>
+```
+
+The Snake game loads and the info bar shows **🖥 Server: &lt;container-id&gt;** — the hostname of whichever API replica handled the request.
+
+---
+
 ## Solution Structure
 
 ```
@@ -411,6 +488,9 @@ lab-02/
     ├── Dockerfile                           # Frontend multi-stage build
     ├── docker-compose.yml                   # Two-service compose
     └── UltimateSnake.slnx
+├── deployment/
+│   └── main.bicep                           # Azure Container Apps deployment (frontend + API)
+└── README.md
 ```
 
 ---

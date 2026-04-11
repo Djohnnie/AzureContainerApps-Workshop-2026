@@ -358,6 +358,62 @@ To stop, press **Ctrl+C** in the terminal.
 
 ---
 
+## Deploying to Azure Container Apps
+
+The `deployment/main.bicep` file deploys the frontend as an Azure Container App with the Consumption workload profile and external ingress on port 8080.
+
+### Prerequisites
+
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed
+- Logged in to Azure (`az login`)
+- An existing Azure resource group and Azure Container Registry
+
+### 1. Push the image to a registry
+
+Open a terminal in the `src/` folder and build the image directly in ACR:
+
+```bash
+az acr build \
+  --registry <your-registry> \
+  --image ultimate-snake-lab01-frontend:latest \
+  .
+```
+
+### 2. Run the Bicep deployment
+
+Open a terminal in the `lab-01` folder and run:
+
+```bash
+az deployment group create \
+  --resource-group <your-resource-group> \
+  --template-file deployment/main.bicep \
+  --parameters containerAppName=<app-name> \
+               containerAppEnvironmentName=<env-name> \
+               containerRegistryName=<registry-name> \
+               managedIdentityName=<identity-name> \
+               containerImage=<your-registry>.azurecr.io/ultimate-snake-lab01-frontend:latest
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `containerAppName` | Name to give the new Container App |
+| `containerAppEnvironmentName` | Name for the Container App Environment (created if it does not exist) |
+| `containerRegistryName` | Name of the existing Azure Container Registry (without `.azurecr.io`) |
+| `managedIdentityName` | Name of the user-assigned managed identity to create |
+| `containerImage` | Fully qualified container image reference |
+
+The Bicep file creates a **user-assigned managed identity**, grants it the `AcrPull` role on the registry, and links it to the Container App — no credentials stored, no manual secret rotation.
+
+### 3. Open the deployed app
+
+Once the deployment completes, the FQDN is printed as an output. Open it in your browser:
+
+```
+https://<containerAppFqdn>
+```
+
+---
+
 ## Solution Structure
 
 ```
@@ -392,6 +448,9 @@ lab-01/
     ├── Dockerfile
     ├── docker-compose.yml
     └── UltimateSnake.Frontend.sln
+├── deployment/
+│   └── main.bicep                               # Azure Container Apps deployment
+└── README.md
 ```
 
 ---
