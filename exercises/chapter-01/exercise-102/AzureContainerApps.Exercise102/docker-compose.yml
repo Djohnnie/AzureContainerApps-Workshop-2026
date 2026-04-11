@@ -1,0 +1,6 @@
+services:
+  app:
+    build: .
+    image: azure-container-apps-exercise-102:latest
+    ports:
+      - "8080:8080"

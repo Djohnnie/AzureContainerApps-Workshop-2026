@@ -10,5 +10,6 @@ A hands-on workshop for learning [Azure Container Apps](https://learn.microsoft.
 |---------|-------------|
 | [📖 Content](content/README.md) | Slide decks for each chapter |
 | [🏋️ Exercises](exercises/README.md) | Hands-on coding exercises |
+| [🐍 Lab Project](lab-project/README.md) | Ultimate Snake — the integrated capstone project |
 
 ---

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
-  <title id="title">Excersise: Your first container</title>
-  <desc id="desc">Exercise slide for creating a first Docker container image with Visual Studio Code and Docker.</desc>
+  <title id="title">Exercise 101: Your first container</title>
+  <desc id="desc">Exercise 101 slide for creating a first Docker container image with Visual Studio Code and Docker.</desc>
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#081b33"/>
@@ -27,11 +27,11 @@
   <rect x="140" y="120" width="160" height="10" rx="5" fill="url(#accent)"/>
 
   <text x="140" y="250" fill="#e0f2fe" font-family="Segoe UI, Arial, sans-serif" font-size="76" font-weight="700" letter-spacing="1">
-    Excersise: Your first container
+    Exercise 101: Your first container
   </text>
 
   <text x="140" y="390" fill="#99f6e4" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="600" letter-spacing="5">
-    HANDS-ON LAB
+    HANDS-ON EXERCISE
   </text>
 
   <g filter="url(#shadow)">

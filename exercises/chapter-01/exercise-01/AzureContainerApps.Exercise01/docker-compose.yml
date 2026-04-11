@@ -1,4 +1,0 @@
-services:
-  app:
-    build: .
-    image: azure-container-apps-exercise-01:latest

@@ -1,0 +1,213 @@
+@page "/"
+@rendermode InteractiveWebAssembly
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<PageTitle>🐍 Ultimate Snake</PageTitle>
+
+@if (_phase == GamePhase.NameEntry)
+{
+    <MudPaper Elevation="4" Style="padding: 2rem; background: #161b22; border-radius: 12px; min-width: 320px; text-align: center;">
+        <MudText Typo="Typo.h3" Style="color: #4ade80; font-family: monospace; margin-bottom: 0.5rem;">🐍 Ultimate Snake</MudText>
+        <MudText Typo="Typo.body2" Style="color: #8b949e; margin-bottom: 1.5rem;">30×30 grid · wrap-around · classic rules</MudText>
+        <MudTextField @bind-Value="_playerName"
+                      Label="Player name"
+                      Variant="Variant.Outlined"
+                      Style="margin-bottom: 1rem;"
+                      MaxLength="20"
+                      OnKeyUp="OnNameFieldKeyUp" />
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   Size="Size.Large"
+                   FullWidth="true"
+                   OnClick="StartGame"
+                   Disabled="@(string.IsNullOrWhiteSpace(_playerName))">
+            Start Game
+        </MudButton>
+    </MudPaper>
+}
+else
+{
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+        <div style="display: flex; gap: 2rem; color: #c9d1d9; font-family: monospace; font-size: 1rem;">
+            <span>🎮 <strong style="color:#4ade80;">@_playerName</strong></span>
+            <span>🍎 Score: <strong style="color:#f97316;">@_engine.Score</strong></span>
+            @if (_phase == GamePhase.Playing)
+            {
+                <span>⚡ Speed: <strong style="color:#60a5fa;">@(Math.Round(1000.0 / _tickMs, 1)) t/s</strong></span>
+            }
+        </div>
+
+        <div class="game-grid" tabindex="0">
+            @for (int row = 0; row < SnakeGameEngine.GridSize; row++)
+            {
+                int y = row;
+                @for (int col = 0; col < SnakeGameEngine.GridSize; col++)
+                {
+                    int x = col;
+                    <div class="@CellClass(_engine.GetCell(x, y))"></div>
+                }
+            }
+
+            @if (_phase == GamePhase.Countdown)
+            {
+                <div class="grid-overlay">
+                    <span class="countdown-text">@_countdownText</span>
+                </div>
+            }
+            else if (_phase == GamePhase.GameOver)
+            {
+                <div class="grid-overlay">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💀 Game Over</div>
+                        <div style="font-size: 1.25rem; margin-bottom: 1.5rem; color: #f97316;">Score: @_engine.Score</div>
+                        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Restart">Play Again</MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="GoToNameEntry">Change Name</MudButton>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <MudText Typo="Typo.caption" Style="color: #484f58;">Arrow keys · WASD · ZQSD (AZERTY)</MudText>
+    </div>
+}
+
+@code {
+    private string _playerName = "Player";
+    private GamePhase _phase = GamePhase.NameEntry;
+    private readonly SnakeGameEngine _engine = new();
+    private string _countdownText = "3";
+    private int _tickMs = 150;
+
+    private DotNetObjectReference<SnakeGame>? _selfRef;
+    private IJSObjectReference? _jsModule;
+    private CancellationTokenSource? _cts;
+
+    private static string CellClass(CellType t) => t switch
+    {
+        CellType.SnakeHead => "cell cell-head",
+        CellType.SnakeBody => "cell cell-body",
+        CellType.Food      => "cell cell-food",
+        _                  => "cell cell-empty"
+    };
+
+    private async Task OnNameFieldKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_playerName))
+            await StartGame();
+    }
+
+    private async Task StartGame()
+    {
+        _engine.Initialize();
+        _phase = GamePhase.Countdown;
+        _tickMs = 150;
+        await InvokeAsync(StateHasChanged);
+        await RunCountdown();
+    }
+
+    private async Task RunCountdown()
+    {
+        foreach (var label in new[] { "3", "2", "1", "GO!" })
+        {
+            _countdownText = label;
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(1000);
+        }
+
+        _phase = GamePhase.Playing;
+        await InvokeAsync(StateHasChanged);
+        await InitInputAsync();
+        _ = RunGameLoop();
+    }
+
+    private async Task InitInputAsync()
+    {
+        _selfRef = DotNetObjectReference.Create(this);
+        _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/snake.js");
+        await _jsModule.InvokeVoidAsync("init", _selfRef);
+    }
+
+    private async Task DisposeInputAsync()
+    {
+        if (_jsModule is not null)
+        {
+            await _jsModule.InvokeVoidAsync("dispose");
+            await _jsModule.DisposeAsync();
+            _jsModule = null;
+        }
+        _selfRef?.Dispose();
+        _selfRef = null;
+    }
+
+    private async Task RunGameLoop()
+    {
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(_tickMs, token);
+                if (!_engine.Tick())
+                {
+                    _phase = GamePhase.GameOver;
+                    await InvokeAsync(StateHasChanged);
+                    await DisposeInputAsync();
+                    return;
+                }
+                AdjustSpeed();
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private void AdjustSpeed()
+    {
+        int speedBoost = (_engine.Score / 5) * 5;
+        _tickMs = Math.Max(80, 150 - speedBoost);
+    }
+
+    [JSInvokable]
+    public void HandleKey(string key)
+    {
+        var dir = key switch
+        {
+            "ArrowUp"    or "w" or "W" or "z" or "Z" => Models.Direction.Up,
+            "ArrowDown"  or "s" or "S"               => Models.Direction.Down,
+            "ArrowLeft"  or "a" or "A" or "q" or "Q" => Models.Direction.Left,
+            "ArrowRight" or "d" or "D"               => Models.Direction.Right,
+            _ => (Models.Direction?)null
+        };
+        if (dir.HasValue) _engine.SetNextDirection(dir.Value);
+    }
+
+    private async Task Restart()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        await DisposeInputAsync();
+        await StartGame();
+    }
+
+    private async Task GoToNameEntry()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        await DisposeInputAsync();
+        _phase = GamePhase.NameEntry;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        await DisposeInputAsync();
+    }
+}

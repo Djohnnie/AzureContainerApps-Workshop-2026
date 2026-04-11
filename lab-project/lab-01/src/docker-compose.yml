@@ -1,0 +1,8 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ultimate-snake-lab01-frontend:latest
+    ports:
+      - "8080:8080"
