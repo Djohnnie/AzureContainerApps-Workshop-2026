@@ -1,0 +1,10 @@
+<Solution>
+  <Project Path="UltimateSnake.AppHost/UltimateSnake.AppHost.csproj" />
+  <Project Path="UltimateSnake.ServiceDefaults/UltimateSnake.ServiceDefaults.csproj" />
+  <Project Path="UltimateSnake.Orleans.Contracts/UltimateSnake.Orleans.Contracts.csproj" />
+  <Project Path="UltimateSnake.Orleans.Host/UltimateSnake.Orleans.Host.csproj" />
+  <Project Path="UltimateSnake.Backend.Api/UltimateSnake.Backend.Api.csproj" />
+  <Project Path="UltimateSnake.Frontend.Client/UltimateSnake.Frontend.Client.csproj" />
+  <Project Path="UltimateSnake.Frontend/UltimateSnake.Frontend.csproj" />
+  <Project Path="UltimateSnake.Orleans.Scaler/UltimateSnake.Orleans.Scaler.csproj" />
+</Solution>

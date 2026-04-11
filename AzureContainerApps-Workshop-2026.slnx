@@ -63,4 +63,14 @@
     <Project Path="lab-project/lab-03/src/UltimateSnake.Frontend.Client/UltimateSnake.Frontend.Client.csproj" />
     <Project Path="lab-project/lab-03/src/UltimateSnake.Frontend/UltimateSnake.Frontend.csproj" />
   </Folder>
+  <Folder Name="/lab-project/lab-04/">
+    <Project Path="lab-project/lab-04/src/UltimateSnake.AppHost/UltimateSnake.AppHost.csproj" />
+    <Project Path="lab-project/lab-04/src/UltimateSnake.ServiceDefaults/UltimateSnake.ServiceDefaults.csproj" />
+    <Project Path="lab-project/lab-04/src/UltimateSnake.Orleans.Contracts/UltimateSnake.Orleans.Contracts.csproj" />
+    <Project Path="lab-project/lab-04/src/UltimateSnake.Orleans.Host/UltimateSnake.Orleans.Host.csproj" />
+    <Project Path="lab-project/lab-04/src/UltimateSnake.Orleans.Scaler/UltimateSnake.Orleans.Scaler.csproj" />
+    <Project Path="lab-project/lab-04/src/UltimateSnake.Backend.Api/UltimateSnake.Backend.Api.csproj" />
+    <Project Path="lab-project/lab-04/src/UltimateSnake.Frontend.Client/UltimateSnake.Frontend.Client.csproj" />
+    <Project Path="lab-project/lab-04/src/UltimateSnake.Frontend/UltimateSnake.Frontend.csproj" />
+  </Folder>
 </Solution>
