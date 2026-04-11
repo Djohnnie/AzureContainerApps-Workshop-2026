@@ -1,0 +1,162 @@
+@description('The name of the API Container App.')
+param apiAppName string
+
+@description('The name of the Worker Container App.')
+param workerAppName string
+
+@description('The name of the Container App Environment.')
+param containerAppEnvironmentName string
+
+@description('The name of the Azure Container Registry (without .azurecr.io).')
+param containerRegistryName string
+
+@description('The fully qualified API container image name (e.g. myregistry.azurecr.io/myimage:tag).')
+param apiContainerImage string
+
+@description('The fully qualified Worker container image name (e.g. myregistry.azurecr.io/myimage:tag).')
+param workerContainerImage string
+
+@description('The name of the shared Managed Identity used by both Container Apps.')
+param managedIdentityName string
+
+@description('The location for all resources.')
+param location string = resourceGroup().location
+
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: containerRegistryName
+}
+
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: managedIdentityName
+  location: location
+}
+
+var acrPullRoleDefinitionId = subscriptionResourceId(
+  'Microsoft.Authorization/roleDefinitions',
+  '7f951dda-4ed3-4680-a7ca-43fe172d538d'
+)
+
+module acrPullRoleAssignment 'roleAssignment.bicep' = {
+  name: 'acrPullRoleAssignment'
+  params: {
+    principalId: managedIdentity.properties.principalId
+    roleDefinitionId: acrPullRoleDefinitionId
+    containerRegistryName: containerRegistryName
+  }
+}
+
+resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
+  name: containerAppEnvironmentName
+  location: location
+  properties: {
+    workloadProfiles: [
+      {
+        name: 'Consumption'
+        workloadProfileType: 'Consumption'
+      }
+    ]
+  }
+}
+
+resource apiContainerApp 'Microsoft.App/containerApps@2024-03-01' = {
+  name: apiAppName
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentity.id}': {}
+    }
+  }
+  properties: {
+    environmentId: containerAppEnvironment.id
+    workloadProfileName: 'Consumption'
+    configuration: {
+      ingress: {
+        external: false
+        targetPort: 8080
+        transport: 'auto'
+      }
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: managedIdentity.id
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: apiAppName
+          image: apiContainerImage
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
+        }
+      ]
+      scale: {
+        minReplicas: 0
+        maxReplicas: 10
+        rules: [
+          {
+            name: 'http-scaling'
+            http: {
+              metadata: {
+                concurrentRequests: '10'
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+  dependsOn: [acrPullRoleAssignment]
+}
+
+resource workerContainerApp 'Microsoft.App/containerApps@2024-03-01' = {
+  name: workerAppName
+  location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentity.id}': {}
+    }
+  }
+  properties: {
+    environmentId: containerAppEnvironment.id
+    workloadProfileName: 'Consumption'
+    configuration: {
+      registries: [
+        {
+          server: containerRegistry.properties.loginServer
+          identity: managedIdentity.id
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: workerAppName
+          image: workerContainerImage
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
+          env: [
+            {
+              name: 'API_BASE_URL'
+              value: 'https://${apiContainerApp.properties.configuration.ingress.fqdn}'
+            }
+          ]
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 1
+      }
+    }
+  }
+  dependsOn: [acrPullRoleAssignment]
+}
+
+output apiAppFqdn string = apiContainerApp.properties.configuration.ingress.fqdn

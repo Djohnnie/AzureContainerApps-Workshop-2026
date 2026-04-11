@@ -21,3 +21,10 @@ Welcome to the **Azure Container Apps Workshop** exercises. Work through each ex
 |---|----------|-------------|
 | 1 | [Exercise 201 — Multi-Container App with internal API](chapter-02/exercise-201/README.md) | Connect a web front end and a minimal API back end using an environment variable, and observe the API container hostname from the web page |
 | 2 | [Exercise 202 — Multi-Revision App with Traffic Splitting](chapter-02/exercise-202/README.md) | Deploy two revisions of a web app with different background colors and split traffic 25% / 75% using Azure Container Apps multi-revision mode |
+| 3 | [Exercise 203 — Auto-Scaling from Zero](chapter-02/exercise-203/README.md) | Deploy a minimal API that scales from zero to ten replicas driven by an HTTP load-generator worker service |
+
+---
+
+## Chapter 03 — Stateful scalable services using Microsoft Orleans
+
+> 🚧 **Coming soon** — exercises for this chapter are in preparation.

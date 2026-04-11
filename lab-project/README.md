@@ -13,6 +13,7 @@
 |-----|-------|----------------|
 | [Lab 01](lab-01/README.md) | Blazor Frontend | Scaffold the Blazor Snake game, add MudBlazor, containerise with Docker |
 | [Lab 02](lab-02/README.md) | Backend API | Add a minimal API backend, wire it to the frontend, run both with Docker Compose |
+| [Lab 03](lab-03/README.md) | Stateful scalable services using Microsoft Orleans | Multi-container stateful scalable apps using Microsoft Orleans Grains and Silos |
 
 ---
 
