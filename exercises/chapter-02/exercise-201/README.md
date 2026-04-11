@@ -149,3 +149,13 @@ https://<webAppFqdn>
 ```
 
 The API is only accessible internally — the web app reaches it via its internal FQDN, which is automatically injected as `API_BASE_URL` by the Bicep template.
+
+---
+
+## Load Balancing with Fixed Replicas
+
+The API container app is configured with a **fixed replica count of 2** (`minReplicas: 2`, `maxReplicas: 2`). No KEDA scalers are used — the replica count is static and does not respond to traffic volume.
+
+With two API replicas running, Azure Container Apps automatically load-balances requests across both instances. Because each replica has a unique hostname, you can observe this behaviour directly: refresh the web page multiple times and you will see the **API server name** alternate between the two replica hostnames.
+
+This illustrates how Azure Container Apps routes traffic across replicas transparently, without any client-side configuration.

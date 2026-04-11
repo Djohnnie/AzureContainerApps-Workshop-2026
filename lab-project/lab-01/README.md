@@ -372,4 +372,4 @@ lab-01/
 
 ## What's Next
 
-**Lab 02** will add a **Minimal API backend** with a SignalR hub for real-time score broadcasting, deploy both containers to **Azure Container Apps**, and configure service-to-service discovery via the internal ingress.
+**[Lab 02](../lab-02/README.md)** adds a **Minimal API backend** (`UltimateSnake.Backend.Api`) that returns the server hostname. The Blazor frontend proxies calls to it via a server-side `/api/server-name` endpoint, and the Snake game displays which container it is connected to — introducing multi-container communication and service wiring via environment variables.

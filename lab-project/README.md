@@ -7,6 +7,15 @@
 
 ---
 
+## 🧪 Labs
+
+| Lab | Title | What you build |
+|-----|-------|----------------|
+| [Lab 01](lab-01/README.md) | Blazor Frontend | Scaffold the Blazor Snake game, add MudBlazor, containerise with Docker |
+| [Lab 02](lab-02/README.md) | Backend API | Add a minimal API backend, wire it to the frontend, run both with Docker Compose |
+
+---
+
 ## 📋 Table of Contents
 
 - [Overview](#overview)

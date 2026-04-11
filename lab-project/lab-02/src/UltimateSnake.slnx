@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="UltimateSnake.Backend.Api/UltimateSnake.Backend.Api.csproj" />
+  <Project Path="UltimateSnake.Frontend.Client/UltimateSnake.Frontend.Client.csproj" />
+  <Project Path="UltimateSnake.Frontend/UltimateSnake.Frontend.csproj" />
+</Solution>

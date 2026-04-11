@@ -1,0 +1,31 @@
+services:
+  api:
+    build:
+      context: ./UltimateSnake.Backend.Api
+      dockerfile: Dockerfile
+    image: ultimate-snake-lab02-api:latest
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8080'"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - ultimate-snake
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ultimate-snake-lab02-frontend:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - API_BASE_URL=http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - ultimate-snake
+
+networks:
+  ultimate-snake:

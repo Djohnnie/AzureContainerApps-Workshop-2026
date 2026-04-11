@@ -17,4 +17,9 @@
     <Project Path="lab-project/lab-01/src/UltimateSnake.Frontend.Client/UltimateSnake.Frontend.Client.csproj" />
     <Project Path="lab-project/lab-01/src/UltimateSnake.Frontend/UltimateSnake.Frontend.csproj" />
   </Folder>
+  <Folder Name="/lab-project/lab-02/">
+    <Project Path="lab-project/lab-02/src/UltimateSnake.Backend.Api/UltimateSnake.Backend.Api.csproj" />
+    <Project Path="lab-project/lab-02/src/UltimateSnake.Frontend.Client/UltimateSnake.Frontend.Client.csproj" />
+    <Project Path="lab-project/lab-02/src/UltimateSnake.Frontend/UltimateSnake.Frontend.csproj" />
+  </Folder>
 </Solution>
