@@ -342,11 +342,49 @@ docker compose down
 
 ---
 
+## Step 8: Run with .NET Aspire (Optional)
+
+The `UltimateSnake.AppHost` project uses **.NET Aspire** to start **both** the API and the frontend together with a single command — automatically wiring `API_BASE_URL` so there is no manual port coordination.
+
+```bash
+dotnet run --project UltimateSnake.AppHost/UltimateSnake.AppHost.csproj
+```
+
+Aspire prints URLs to the terminal:
+
+| URL | Purpose |
+|-----|---------|
+| `http://localhost:15xxx` (dashboard) | Aspire dashboard — structured logs, env vars, health for both services |
+| `http://localhost:5xxx` (frontend) | The Snake game with server-name display |
+
+The AppHost wires the two services automatically:
+
+```csharp
+var api = builder.AddProject<Projects.UltimateSnake_Backend_Api>("api")
+    .WithHttpEndpoint();
+
+builder.AddProject<Projects.UltimateSnake_Frontend>("frontend")
+    .WithHttpEndpoint()
+    .WithReference(api)
+    .WithEnvironment("API_BASE_URL", api.GetEndpoint("http"));
+```
+
+`GetEndpoint("http")` resolves to the actual runtime URL Aspire assigns to the API — no hardcoded ports needed.
+
+Open the **Aspire dashboard** link to see both the `api` and `frontend` resources, their logs, and environment variables.
+
+To stop, press **Ctrl+C** in the terminal.
+
+---
+
 ## Solution Structure
 
 ```
 lab-02/
 └── src/
+    ├── UltimateSnake.AppHost/               # .NET Aspire AppHost
+    │   ├── AppHost.cs                       # Wires API + frontend with API_BASE_URL
+    │   └── UltimateSnake.AppHost.csproj
     ├── UltimateSnake.Frontend/              # Server host — proxy endpoint + Blazor host
     │   ├── Components/
     │   │   ├── App.razor

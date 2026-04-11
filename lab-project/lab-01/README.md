@@ -335,11 +335,37 @@ To stop: press **Ctrl+C**, then `docker compose down`.
 
 ---
 
+## Step 9: Run with .NET Aspire (Optional)
+
+The `UltimateSnake.AppHost` project uses **.NET Aspire** to start the frontend with a single command, giving you the **Aspire dashboard** for logs and resource health — without needing Docker.
+
+```bash
+dotnet run --project UltimateSnake.AppHost/UltimateSnake.AppHost.csproj
+```
+
+Aspire prints two URLs to the terminal:
+
+| URL | Purpose |
+|-----|---------|
+| `http://localhost:15xxx` (dashboard) | Aspire dashboard — logs, environment variables, resource state |
+| `http://localhost:5xxx` (frontend) | The Snake game |
+
+Click the **frontend** resource link in the dashboard or open the frontend URL directly to play.
+
+> **Tip:** Aspire assigns random ports. Look for `frontend: http://localhost:…` in the terminal output.
+
+To stop, press **Ctrl+C** in the terminal.
+
+---
+
 ## Solution Structure
 
 ```
 lab-01/
 └── src/
+    ├── UltimateSnake.AppHost/                   # .NET Aspire AppHost
+    │   ├── AppHost.cs                           # Orchestrates the frontend project
+    │   └── UltimateSnake.AppHost.csproj
     ├── UltimateSnake.Frontend/                  # Server host
     │   ├── Components/
     │   │   ├── App.razor                        # HTML shell + MudBlazor CSS/JS
