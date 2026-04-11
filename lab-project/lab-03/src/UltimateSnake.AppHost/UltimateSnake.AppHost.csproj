@@ -1,0 +1,17 @@
+<Project Sdk="Aspire.AppHost.Sdk/13.2.1">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UserSecretsId>d4b8e3a1-7c2f-4a9e-b561-3d8e9f2c1a05</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UltimateSnake.Orleans.Host\UltimateSnake.Orleans.Host.csproj" />
+    <ProjectReference Include="..\UltimateSnake.Backend.Api\UltimateSnake.Backend.Api.csproj" />
+    <ProjectReference Include="..\UltimateSnake.Frontend\UltimateSnake.Frontend.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,6 +1,7 @@
 using Azure.Data.Tables;
 using Orleans.Configuration;
 using Orleans.Dashboard;
+using UltimateSnake.Orleans.Host.Grains;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +22,8 @@ builder.UseOrleans(silo =>
 
     silo.Configure<ClusterOptions>(options =>
     {
-        options.ClusterId = "exercise-301";
-        options.ServiceId = "exercise-301";
+        options.ClusterId = "lab-03";
+        options.ServiceId = "lab-03";
     });
 
     silo.AddDashboard();

@@ -1,0 +1,81 @@
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(30, 16px);
+    grid-template-rows: repeat(30, 16px);
+    gap: 1px;
+    background-color: #1c1c2e;
+    border: 2px solid #4a4a6a;
+    border-radius: 4px;
+    position: relative;
+    outline: none;
+}
+
+.cell {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+}
+
+.cell-empty {
+    background-color: #0d1117;
+}
+
+.cell-head {
+    background-color: #4ade80;
+    border-radius: 4px;
+    box-shadow: 0 0 4px #4ade80aa;
+}
+
+.cell-body {
+    background-color: #16a34a;
+}
+
+.cell-other-head {
+    background-color: #60a5fa;
+    border-radius: 4px;
+    box-shadow: 0 0 4px #60a5faaa;
+}
+
+.cell-other-body {
+    background-color: #2563eb;
+}
+
+.cell-food {
+    background-color: #f97316;
+    border-radius: 50%;
+    box-shadow: 0 0 4px #f97316aa;
+}
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 17, 23, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    color: #c9d1d9;
+    font-family: monospace;
+}
+
+.grid-overlay-spectate {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 17, 23, 0.55);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding-bottom: 1rem;
+    border-radius: 2px;
+    color: #c9d1d9;
+    font-family: monospace;
+    pointer-events: none;
+}
+
+.countdown-text {
+    font-size: 5rem;
+    font-weight: bold;
+    color: #4ade80;
+    text-shadow: 0 0 20px #4ade80;
+}

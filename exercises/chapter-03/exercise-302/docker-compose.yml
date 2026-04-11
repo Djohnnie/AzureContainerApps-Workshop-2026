@@ -1,0 +1,50 @@
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    command: azurite --loose --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+
+  orleans-host:
+    build:
+      context: ./AzureContainerApps.Exercise302.Orleans.Host
+      dockerfile: Dockerfile
+    image: azure-container-apps-exercise-302-orleans-host:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - AZURE_STORAGETABLE_RESOURCEENDPOINT=http://azurite:10002/devstoreaccount1
+      - AZURE_STORAGETABLE_CLIENTID=
+      - AZURE_TENANT_ID=
+      - AZURE_CLIENT_ID=
+      - AZURE_CLIENT_SECRET=
+    depends_on:
+      - azurite
+
+  api:
+    build:
+      context: .
+      dockerfile: AzureContainerApps.Exercise302.Api/Dockerfile
+    image: azure-container-apps-exercise-302-api:latest
+    ports:
+      - "8081:8080"
+    environment:
+      - AZURE_STORAGETABLE_RESOURCEENDPOINT=http://azurite:10002/devstoreaccount1
+      - AZURE_STORAGETABLE_CLIENTID=
+      - AZURE_TENANT_ID=
+      - AZURE_CLIENT_ID=
+      - AZURE_CLIENT_SECRET=
+    depends_on:
+      - orleans-host
+
+  worker:
+    build:
+      context: ./AzureContainerApps.Exercise302.Worker
+      dockerfile: Dockerfile
+    image: azure-container-apps-exercise-302-worker:latest
+    environment:
+      - API_BASE_URL=http://api:8080
+    depends_on:
+      - api

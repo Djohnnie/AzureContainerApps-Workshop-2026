@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <UseAspire Condition="'$(UseAspire)' == ''">true</UseAspire>
+    <DefineConstants Condition="'$(UseAspire)' == 'true'">$(DefineConstants);ASPIRE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Orleans.Client" Version="10.*" />
+    <PackageReference Include="Microsoft.Orleans.Clustering.AzureStorage" Version="10.*" />
+    <ProjectReference Include="../UltimateSnake.Orleans.Contracts/UltimateSnake.Orleans.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseAspire)' == 'true'">
+    <ProjectReference Include="../UltimateSnake.ServiceDefaults/UltimateSnake.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

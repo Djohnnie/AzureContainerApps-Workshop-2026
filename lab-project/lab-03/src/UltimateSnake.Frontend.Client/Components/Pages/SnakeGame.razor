@@ -1,0 +1,683 @@
+@page "/"
+@rendermode InteractiveWebAssembly
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@inject HttpClient Http
+
+<PageTitle>🐍 Ultimate Snake</PageTitle>
+
+@if (_phase == GamePhase.NameEntry)
+{
+    <MudPaper Elevation="4" Style="padding: 2rem; background: #161b22; border-radius: 12px; min-width: 320px; text-align: center;">
+        <MudText Typo="Typo.h3" Style="color: #4ade80; font-family: monospace; margin-bottom: 0.5rem;">🐍 Ultimate Snake</MudText>
+        <MudText Typo="Typo.body2" Style="color: #8b949e; margin-bottom: 1.5rem;">Multiplayer · 30×30 grid · Orleans-powered</MudText>
+        <MudTextField @bind-Value="_playerName"
+                      Label="Player name"
+                      Variant="Variant.Outlined"
+                      Style="margin-bottom: 1rem;"
+                      MaxLength="20"
+                      OnKeyUp="OnNameFieldKeyUp" />
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Success"
+                   Size="Size.Large"
+                   FullWidth="true"
+                   OnClick="GoToRoomLobby"
+                   Disabled="@(string.IsNullOrWhiteSpace(_playerName))">
+            Continue
+        </MudButton>
+    </MudPaper>
+}
+else if (_phase == GamePhase.RoomLobby)
+{
+    <MudPaper Elevation="4" Style="padding: 2rem; background: #161b22; border-radius: 12px; min-width: 360px; text-align: center;">
+        <MudText Typo="Typo.h5" Style="color: #4ade80; font-family: monospace; margin-bottom: 1.5rem;">👋 Welcome, @_playerName!</MudText>
+
+        <MudDivider Style="margin: 1rem 0;" />
+
+        <MudText Typo="Typo.subtitle1" Style="color: #c9d1d9; margin-bottom: 1rem;">Create a new room</MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Large" FullWidth="true"
+                   OnClick="CreateRoom" Disabled="@_isLoading">
+            @if (_isLoading) { <MudProgressCircular Size="Size.Small" Indeterminate="true" /> } else { <span>Create Room</span> }
+        </MudButton>
+
+        <MudDivider Style="margin: 1.5rem 0;" />
+
+        <MudText Typo="Typo.subtitle1" Style="color: #c9d1d9; margin-bottom: 1rem;">Join an existing room</MudText>
+        <MudTextField @bind-Value="_joinRoomCode"
+                      Label="Room code"
+                      Variant="Variant.Outlined"
+                      Style="margin-bottom: 1rem;"
+                      MaxLength="6"
+                      OnKeyUp="OnJoinCodeKeyUp" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true"
+                   OnClick="JoinRoom"
+                   Disabled="@(_isLoading || string.IsNullOrWhiteSpace(_joinRoomCode) || _joinRoomCode.Length < 6)">
+            Join Room
+        </MudButton>
+
+        @if (!string.IsNullOrEmpty(_lobbyError))
+        {
+            <MudText Style="color: #f97316; margin-top: 1rem;">@_lobbyError</MudText>
+        }
+
+        <MudDivider Style="margin: 1.5rem 0;" />
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="GoToNameEntry">← Back</MudButton>
+    </MudPaper>
+}
+else if (_phase == GamePhase.WaitingLobby)
+{
+    <MudPaper Elevation="4" Style="padding: 2rem; background: #161b22; border-radius: 12px; min-width: 380px; text-align: center;">
+        <MudText Typo="Typo.h5" Style="color: #4ade80; font-family: monospace; margin-bottom: 0.25rem;">⏳ Waiting Room</MudText>
+        <MudText Typo="Typo.caption" Style="color: #8b949e; margin-bottom: 1.5rem; display: block;">
+            Room Code: <strong style="color:#60a5fa; font-size:1.1rem; letter-spacing:0.1em;">@_roomCode</strong>
+            @if (_isHost) { <span> · You are the host</span> }
+        </MudText>
+
+        <MudDivider Style="margin: 0.75rem 0;" />
+
+        @foreach (var s in _otherSnakes.Prepend(new SnakeStateDto(_snakeId, _playerId, _playerName + " (you)", new(), "Right", 0, true, _iAmReady, new())))
+        {
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.5rem; border-bottom: 1px solid #21262d;">
+                <MudText Style="color: #c9d1d9;">🎮 @s.PlayerName</MudText>
+                @if (s.IsReady)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small">✓ Ready</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Default" Size="Size.Small">Waiting…</MudChip>
+                }
+            </div>
+        }
+
+        <MudDivider Style="margin: 1rem 0;" />
+
+        <MudButton Variant="@(_iAmReady ? Variant.Outlined : Variant.Filled)"
+                   Color="@(_iAmReady ? Color.Warning : Color.Success)"
+                   Size="Size.Large" FullWidth="true"
+                   Style="margin-bottom: 0.75rem;"
+                   OnClick="ClickReady">
+            @(_iAmReady ? "✓ Ready (click to unready)" : "Click when Ready")
+        </MudButton>
+
+        @if (_isHost)
+        {
+            var allReady = _iAmReady && _otherSnakes.All(s => s.IsReady);
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true"
+                       Disabled="@(!allReady)"
+                       OnClick="ClickStart">
+                🚀 Start Game
+            </MudButton>
+            @if (!allReady)
+            {
+                <MudText Typo="Typo.caption" Style="color: #8b949e; margin-top: 0.5rem; display: block;">
+                    Waiting for all players to be ready…
+                </MudText>
+            }
+        }
+        else
+        {
+            <MudText Typo="Typo.caption" Style="color: #8b949e; margin-top: 0.5rem; display: block;">
+                Waiting for the host to start the game…
+            </MudText>
+        }
+
+        <MudDivider Style="margin: 1.5rem 0;" />
+        <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="GoToRoomLobby">← Leave Room</MudButton>
+    </MudPaper>
+}
+else if (_phase == GamePhase.Leaderboard)
+{
+    <MudPaper Elevation="4" Style="padding: 2rem; background: #161b22; border-radius: 12px; min-width: 360px; text-align: center;">
+        <MudText Typo="Typo.h4" Style="color: #f97316; font-family: monospace; margin-bottom: 0.25rem;">🏆 Game Over</MudText>
+        <MudText Typo="Typo.caption" Style="color: #8b949e; display: block; margin-bottom: 1.5rem;">Final Standings — Room @_roomCode</MudText>
+
+        @foreach (var entry in _leaderboard)
+        {
+            var medal = entry.Rank switch { 1 => "🥇", 2 => "🥈", 3 => "🥉", _ => $"#{entry.Rank}" };
+            var style = entry.IsMe
+                ? "display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.75rem; margin-bottom: 0.4rem; border-radius: 8px; background: #1f2937; border: 1px solid #4ade80;"
+                : "display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.75rem; margin-bottom: 0.4rem; border-radius: 8px; background: #0d1117;";
+            <div style="@style">
+                <MudText Style="color: #c9d1d9; font-family: monospace;">
+                    @medal &nbsp; @entry.PlayerName @(entry.IsMe ? " (you)" : "")
+                </MudText>
+                <MudText Style="color: #f97316; font-family: monospace; font-weight: bold;">
+                    @entry.Score pts
+                </MudText>
+            </div>
+        }
+
+        <MudDivider Style="margin: 1.5rem 0;" />
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Restart">🔄 Play Again</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="GoToRoomLobby">🚪 Room Lobby</MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Default" OnClick="GoToNameEntry">✏️ Change Name</MudButton>
+        </div>
+    </MudPaper>
+}
+else
+{
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+        <div style="display: flex; gap: 2rem; color: #c9d1d9; font-family: monospace; font-size: 1rem; flex-wrap: wrap; justify-content: center;">
+            <span>🎮 <strong style="color:#4ade80;">@_playerName</strong></span>
+            <span>🍎 Score: <strong style="color:#f97316;">@_engine.Score</strong></span>
+            @if ((_phase == GamePhase.Playing || _phase == GamePhase.Spectating) && !string.IsNullOrEmpty(_roomCode))
+            {
+                <span>🔑 Room: <strong style="color:#60a5fa;">@_roomCode</strong></span>
+                <span>👥 Alive: <strong>@_otherSnakes.Count(s => s.IsAlive)/@(_otherSnakes.Count + (_phase == GamePhase.Playing ? 1 : 0))</strong></span>
+            }
+        </div>
+
+        <div class="game-grid" tabindex="0">
+            @for (int row = 0; row < SnakeGameEngine.GridSize; row++)
+            {
+                int y = row;
+                @for (int col = 0; col < SnakeGameEngine.GridSize; col++)
+                {
+                    int x = col;
+                    <div class="@CellClass(GetCombinedCell(x, y))"></div>
+                }
+            }
+
+            @if (_phase == GamePhase.Countdown)
+            {
+                <div class="grid-overlay">
+                    <span class="countdown-text">@_countdownText</span>
+                </div>
+            }
+            else if (_phase == GamePhase.Spectating)
+            {
+                <div class="grid-overlay-spectate">
+                    <div style="font-size: 1.4rem; margin-bottom: 0.25rem;">💀 You died!</div>
+                    <div style="font-size: 0.85rem; color: #8b949e;">
+                        Watching @(_otherSnakes.Count(s => s.IsAlive)) player(s) still alive…
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (_otherSnakes.Count > 0 && _phase == GamePhase.Playing)
+        {
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+                @foreach (var s in _otherSnakes)
+                {
+                    <MudChip T="string" Color="Color.Default" Size="Size.Small">
+                        🎮 @s.PlayerName · @s.Score pts
+                    </MudChip>
+                }
+            </div>
+        }
+
+        <MudText Typo="Typo.caption" Style="color: #484f58;">Arrow keys · WASD · ZQSD (AZERTY)</MudText>
+    </div>
+}
+
+@code {
+    private string _playerName = "Player";
+    private GamePhase _phase = GamePhase.NameEntry;
+    private readonly SnakeGameEngine _engine = new();
+    private string _countdownText = "3";
+    private int _tickMs = 200;
+
+    // Multiplayer state
+    private Guid _playerId = Guid.Empty;
+    private Guid _snakeId = Guid.Empty;
+    private string _roomCode = "";
+    private string _joinRoomCode = "";
+    private string _lobbyError = "";
+    private bool _isLoading;
+    private bool _isHost;
+    private bool _iAmReady;
+    private List<SnakeStateDto> _otherSnakes = new();
+    private HashSet<Models.Position> _otherSnakeHeads = new();
+    private HashSet<Models.Position> _otherSnakeBodies = new();
+    private CancellationTokenSource? _lobbyCts;
+
+    private DotNetObjectReference<SnakeGame>? _selfRef;
+    private IJSObjectReference? _jsModule;
+    private CancellationTokenSource? _cts;
+    private GameApiService? _api;
+
+    protected override void OnInitialized()
+    {
+        _api = new GameApiService(Http);
+    }
+
+    private static string CellClass(CellType t) => t switch
+    {
+        CellType.SnakeHead      => "cell cell-head",
+        CellType.SnakeBody      => "cell cell-body",
+        CellType.OtherSnakeHead => "cell cell-other-head",
+        CellType.OtherSnakeBody => "cell cell-other-body",
+        CellType.Food           => "cell cell-food",
+        _                       => "cell cell-empty"
+    };
+
+    private CellType GetCombinedCell(int x, int y)
+    {
+        var mine = _engine.GetCell(x, y);
+        if (mine != CellType.Empty) return mine;
+        var pos = new Models.Position(x, y);
+        if (_otherSnakeHeads.Contains(pos)) return CellType.OtherSnakeHead;
+        if (_otherSnakeBodies.Contains(pos)) return CellType.OtherSnakeBody;
+        return CellType.Empty;
+    }
+
+    private void UpdateOtherSnakes(List<SnakeStateDto> allSnakes)
+    {
+        _otherSnakes = allSnakes.Where(s => s.Id != _snakeId && s.IsAlive).ToList();
+        _otherSnakeHeads = new HashSet<Models.Position>();
+        _otherSnakeBodies = new HashSet<Models.Position>();
+        foreach (var s in _otherSnakes)
+        {
+            var positions = s.Positions;
+            if (positions.Count == 0) continue;
+            _otherSnakeHeads.Add(positions[^1]);
+            for (int i = 0; i < positions.Count - 1; i++)
+                _otherSnakeBodies.Add(positions[i]);
+        }
+    }
+
+    private void GoToNameEntry()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        _lobbyCts?.Cancel();
+        _lobbyCts?.Dispose();
+        _lobbyCts = null;
+        _phase = GamePhase.NameEntry;
+        _roomCode = "";
+        _joinRoomCode = "";
+        _lobbyError = "";
+        _isHost = false;
+        _iAmReady = false;
+    }
+
+    private void GoToRoomLobby()
+    {
+        _lobbyCts?.Cancel();
+        _lobbyCts?.Dispose();
+        _lobbyCts = null;
+        _lobbyError = "";
+        _joinRoomCode = "";
+        _isHost = false;
+        _iAmReady = false;
+        _phase = GamePhase.RoomLobby;
+    }
+
+    private async Task OnNameFieldKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_playerName))
+            GoToRoomLobby();
+        await Task.CompletedTask;
+    }
+
+    private async Task OnJoinCodeKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && _joinRoomCode.Length >= 6)
+            await JoinRoom();
+    }
+
+    private async Task EnsurePlayerAsync()
+    {
+        if (_playerId == Guid.Empty)
+        {
+            var result = await _api!.CreatePlayerAsync(_playerName);
+            if (result != null) _playerId = result.PlayerId;
+        }
+    }
+
+    private async Task CreateRoom()
+    {
+        _isLoading = true;
+        _lobbyError = "";
+        try
+        {
+            await EnsurePlayerAsync();
+            var result = await _api!.CreateRoomAsync(_playerId, _playerName);
+            if (result == null) { _lobbyError = "Failed to create room. Try again."; return; }
+
+            _roomCode = result.RoomCode;
+            _snakeId = result.SnakeId;
+            _tickMs = result.TickIntervalMs;
+            _isHost = true;
+            _iAmReady = false;
+
+            var dir = Enum.TryParse<Models.Direction>(result.InitialDirection, out var d) ? d : Models.Direction.Right;
+            _engine.InitializeFromServer(result.InitialPositions, dir, result.Food);
+            _otherSnakes = new();
+            _otherSnakeHeads = new();
+            _otherSnakeBodies = new();
+
+            _phase = GamePhase.WaitingLobby;
+            await InvokeAsync(StateHasChanged);
+            StartLobbyPolling();
+        }
+        catch (Exception ex)
+        {
+            _lobbyError = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task JoinRoom()
+    {
+        _isLoading = true;
+        _lobbyError = "";
+        try
+        {
+            await EnsurePlayerAsync();
+            var code = _joinRoomCode.Trim().ToUpperInvariant();
+            var result = await _api!.JoinRoomAsync(code, _playerId, _playerName);
+            if (result == null) { _lobbyError = "Room not found or failed to join."; return; }
+
+            _roomCode = result.RoomCode;
+            _snakeId = result.SnakeId;
+            _tickMs = result.TickIntervalMs;
+            _isHost = false;
+            _iAmReady = false;
+
+            var dir = Enum.TryParse<Models.Direction>(result.InitialDirection, out var d) ? d : Models.Direction.Right;
+            _engine.InitializeFromServer(result.InitialPositions, dir, result.Food);
+            _otherSnakes = new();
+            _otherSnakeHeads = new();
+            _otherSnakeBodies = new();
+
+            _phase = GamePhase.WaitingLobby;
+            await InvokeAsync(StateHasChanged);
+            StartLobbyPolling();
+        }
+        catch (Exception ex)
+        {
+            _lobbyError = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void StartLobbyPolling()
+    {
+        _lobbyCts?.Cancel();
+        _lobbyCts = new CancellationTokenSource();
+        var token = _lobbyCts.Token;
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested && _phase == GamePhase.WaitingLobby)
+            {
+                await Task.Delay(1000, token).ContinueWith(_ => { });
+                if (token.IsCancellationRequested) break;
+                try
+                {
+                    var state = await _api!.GetRoomStateAsync(_roomCode);
+                    if (state == null) continue;
+                    _tickMs = state.TickIntervalMs;
+                    _isHost = state.HostSnakeId == _snakeId;
+                    UpdateOtherSnakes(state.Snakes);
+                    await InvokeAsync(StateHasChanged);
+
+                    if (state.GameStatus == Models.GameStatus.Playing)
+                    {
+                        _lobbyCts?.Cancel();
+                        // Re-initialize our snake from server state to ensure sync
+                        var own = state.Snakes.FirstOrDefault(s => s.Id == _snakeId);
+                        if (own != null)
+                        {
+                            var dir = Enum.TryParse<Models.Direction>(own.Direction, out var d2) ? d2 : Models.Direction.Right;
+                            _engine.InitializeFromServer(own.Positions, dir, own.Food);
+                        }
+                        await InvokeAsync(() => StartCountdownAndPlay());
+                        break;
+                    }
+                }
+                catch { /* ignore poll errors */ }
+            }
+        }, token);
+    }
+
+    private async Task ClickReady()
+    {
+        _iAmReady = !_iAmReady;
+        try
+        {
+            await _api!.SetReadyAsync(_roomCode, _snakeId, _iAmReady);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch { _iAmReady = !_iAmReady; }
+    }
+
+    private async Task ClickStart()
+    {
+        try
+        {
+            var state = await _api!.StartGameAsync(_roomCode, _snakeId);
+            if (state?.GameStatus == Models.GameStatus.Playing)
+            {
+                _lobbyCts?.Cancel();
+                var own = state.Snakes.FirstOrDefault(s => s.Id == _snakeId);
+                if (own != null)
+                {
+                    var dir = Enum.TryParse<Models.Direction>(own.Direction, out var d2) ? d2 : Models.Direction.Right;
+                    _engine.InitializeFromServer(own.Positions, dir, own.Food);
+                }
+                await StartCountdownAndPlay();
+            }
+        }
+        catch { /* ignore */ }
+    }
+
+    private async Task StartCountdownAndPlay()
+    {
+        _phase = GamePhase.Countdown;
+        await InvokeAsync(StateHasChanged);
+        await RunCountdown();
+    }
+
+    private async Task RunCountdown()
+    {
+        foreach (var label in new[] { "3", "2", "1", "GO!" })
+        {
+            _countdownText = label;
+            await InvokeAsync(StateHasChanged);
+            await Task.Delay(1000);
+        }
+
+        _phase = GamePhase.Playing;
+        await InvokeAsync(StateHasChanged);
+        await InitInputAsync();
+        _ = RunGameLoop();
+    }
+
+    private async Task InitInputAsync()
+    {
+        _selfRef = DotNetObjectReference.Create(this);
+        _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./js/snake.js");
+        await _jsModule.InvokeVoidAsync("init", _selfRef);
+    }
+
+    private async Task DisposeInputAsync()
+    {
+        if (_jsModule is not null)
+        {
+            await _jsModule.InvokeVoidAsync("dispose");
+            await _jsModule.DisposeAsync();
+            _jsModule = null;
+        }
+        _selfRef?.Dispose();
+        _selfRef = null;
+    }
+
+    private async Task RunGameLoop()
+    {
+        _cts = new CancellationTokenSource();
+        var token = _cts.Token;
+
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await Task.Delay(_tickMs, token);
+
+                if (_phase == GamePhase.Playing)
+                {
+                    if (!_engine.Tick())
+                    {
+                        // Notify server of death; check if everyone else is also dead
+                        try
+                        {
+                            var deathState = await _api!.UpdateSnakeAsync(_roomCode, _snakeId,
+                                new UpdateSnakeRequest(
+                                    _engine.Snake.ToList(),
+                                    _engine.CurrentDirection.ToString(),
+                                    _engine.Score,
+                                    false));
+                            if (deathState?.GameStatus == Models.GameStatus.GameOver)
+                            {
+                                await GoToLeaderboard(deathState);
+                                return;
+                            }
+                        }
+                        catch { }
+
+                        _phase = GamePhase.Spectating;
+                        await DisposeInputAsync();
+                        await InvokeAsync(StateHasChanged);
+                        continue;
+                    }
+
+                    // Push alive state to server, get room state back
+                    try
+                    {
+                        var roomState = await _api!.UpdateSnakeAsync(_roomCode, _snakeId,
+                            new UpdateSnakeRequest(
+                                _engine.Snake.ToList(),
+                                _engine.CurrentDirection.ToString(),
+                                _engine.Score,
+                                true));
+
+                        if (roomState != null)
+                        {
+                            var ownSnake = roomState.Snakes.FirstOrDefault(s => s.Id == _snakeId);
+                            if (ownSnake != null) _engine.SetFood(ownSnake.Food);
+                            _tickMs = roomState.TickIntervalMs;
+                            UpdateOtherSnakes(roomState.Snakes);
+
+                            if (roomState.GameStatus == Models.GameStatus.GameOver)
+                            {
+                                await GoToLeaderboard(roomState);
+                                return;
+                            }
+                        }
+                    }
+                    catch { }
+                }
+                else if (_phase == GamePhase.Spectating)
+                {
+                    // Poll room state to watch others and detect game over
+                    try
+                    {
+                        var roomState = await _api!.GetRoomStateAsync(_roomCode);
+                        if (roomState != null)
+                        {
+                            _tickMs = roomState.TickIntervalMs;
+                            UpdateOtherSnakes(roomState.Snakes);
+
+                            if (roomState.GameStatus == Models.GameStatus.GameOver)
+                            {
+                                await GoToLeaderboard(roomState);
+                                return;
+                            }
+                        }
+                    }
+                    catch { }
+                }
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+    }
+
+    private record LeaderboardEntry(int Rank, string PlayerName, int Score, bool IsMe);
+    private List<LeaderboardEntry> _leaderboard = new();
+
+    private async Task GoToLeaderboard(RoomStateResponse state)
+    {
+        _leaderboard = state.Snakes
+            .OrderByDescending(s => s.Score)
+            .Select((s, i) => new LeaderboardEntry(i + 1, s.PlayerName, s.Score, s.Id == _snakeId))
+            .ToList();
+        _phase = GamePhase.Leaderboard;
+        await DisposeInputAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void HandleKey(string key)
+    {
+        var dir = key switch
+        {
+            "ArrowUp"    or "w" or "W" or "z" or "Z" => Models.Direction.Up,
+            "ArrowDown"  or "s" or "S"               => Models.Direction.Down,
+            "ArrowLeft"  or "a" or "A" or "q" or "Q" => Models.Direction.Left,
+            "ArrowRight" or "d" or "D"               => Models.Direction.Right,
+            _ => (Models.Direction?)null
+        };
+        if (dir.HasValue) _engine.SetNextDirection(dir.Value);
+    }
+
+    private async Task Restart()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _cts = null;
+        await DisposeInputAsync();
+        // Rejoin the same room — go through the waiting lobby again
+        _isLoading = true;
+        try
+        {
+            var result = await _api!.JoinRoomAsync(_roomCode, _playerId, _playerName);
+            if (result != null)
+            {
+                _snakeId = result.SnakeId;
+                _tickMs = result.TickIntervalMs;
+                _iAmReady = false;
+                var dir = Enum.TryParse<Models.Direction>(result.InitialDirection, out var d) ? d : Models.Direction.Right;
+                _engine.InitializeFromServer(result.InitialPositions, dir, result.Food);
+                _otherSnakes = new();
+                _otherSnakeHeads = new();
+                _otherSnakeBodies = new();
+                _phase = GamePhase.WaitingLobby;
+                await InvokeAsync(StateHasChanged);
+                StartLobbyPolling();
+            }
+        }
+        catch
+        {
+            GoToRoomLobby();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _lobbyCts?.Cancel();
+        _lobbyCts?.Dispose();
+        if (!string.IsNullOrEmpty(_roomCode) && _snakeId != Guid.Empty)
+        {
+            try { await _api!.LeaveRoomAsync(_roomCode, _snakeId); } catch { }
+        }
+        await DisposeInputAsync();
+    }
+}

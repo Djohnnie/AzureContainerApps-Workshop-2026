@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+
+  orleans-host:
+    image: ultimate-snake-lab03-orleans-host:latest
+    build:
+      context: .
+      dockerfile: UltimateSnake.Orleans.Host/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OezenTDgv3mEI6gv2t7bEe3sn/bOSMt5bMJUO+1/DasInDDJTnDQg==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+    ports:
+      - "8082:8080"
+    depends_on:
+      - azurite
+
+  api:
+    image: ultimate-snake-lab03-api:latest
+    build:
+      context: .
+      dockerfile: UltimateSnake.Backend.Api/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OezenTDgv3mEI6gv2t7bEe3sn/bOSMt5bMJUO+1/DasInDDJTnDQg==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+    ports:
+      - "8081:8080"
+    depends_on:
+      - orleans-host
+
+  frontend:
+    image: ultimate-snake-lab03-frontend:latest
+    build:
+      context: .
+      dockerfile: UltimateSnake.Frontend/Dockerfile
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - API_BASE_URL=http://api:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api

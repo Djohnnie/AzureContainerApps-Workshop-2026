@@ -1,5 +1,6 @@
 using AzureContainerApps.Exercise301.Orleans.Host.Grains;
 using Azure.Data.Tables;
+using Orleans.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,12 @@ builder.UseOrleansClient(client =>
     client.UseAzureStorageClustering(options =>
         options.TableServiceClient = new TableServiceClient(connectionString));
 #endif
+
+    client.Configure<ClusterOptions>(options =>
+    {
+        options.ClusterId = "exercise-301";
+        options.ServiceId = "exercise-301";
+    });
 });
 
 var app = builder.Build();
