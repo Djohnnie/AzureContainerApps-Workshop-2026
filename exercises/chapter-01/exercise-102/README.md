@@ -79,3 +79,55 @@ docker compose up
 ```
 
 Open [http://localhost:8080](http://localhost:8080) in your browser to see the Hello World ASCII art page.
+
+---
+
+## Deploying to Azure Container Apps
+
+The `deployment/main.bicep` file deploys the container image as an Azure Container App with the Consumption workload profile and external ingress on port 8080.
+
+### Prerequisites
+
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed
+- Logged in to Azure (`az login`)
+- An existing Azure resource group
+
+### 1. Push the image to a registry
+
+Azure Container Apps must pull images from a container registry. Push your image to Azure Container Registry (or any other registry), for example:
+
+```bash
+az acr build --registry <your-registry> --image azure-container-apps-exercise-102:latest .
+```
+
+### 2. Run the Bicep deployment
+
+Open a terminal in the `exercise-102` folder and run:
+
+```bash
+az deployment group create \
+  --resource-group <your-resource-group> \
+  --template-file deployment/main.bicep \
+  --parameters containerAppName=<app-name> \
+               containerAppEnvironmentName=<env-name> \
+               containerRegistryName=<registry-name> \
+               containerImage=<your-registry>.azurecr.io/azure-container-apps-exercise-102:latest
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `--resource-group` | Name of the existing Azure resource group to deploy into |
+| `containerAppName` | Name to give the new Container App |
+| `containerAppEnvironmentName` | Name for the Container App Environment (created if it does not exist) |
+| `containerRegistryName` | Name of the existing Azure Container Registry (without `.azurecr.io`) |
+| `containerImage` | Fully qualified container image reference (e.g. `myregistry.azurecr.io/myimage:tag`) |
+
+The Bicep file creates a **user-assigned managed identity**, assigns it the `AcrPull` role on the registry, and links it to the Container App — so no credentials are stored and the app can securely pull images from your registry.
+
+### 3. Open the deployed app
+
+Once the deployment completes, the FQDN of the Container App is printed as an output. Open it in your browser:
+
+```
+https://<containerAppFqdn>
+```

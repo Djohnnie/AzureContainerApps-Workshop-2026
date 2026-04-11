@@ -1,0 +1,25 @@
+services:
+  web:
+    build:
+      context: ./AzureContainerApps.Exercise201.Web
+      dockerfile: Dockerfile
+    image: azure-container-apps-exercise-201-web:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - API_BASE_URL=http://api:8080
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ./AzureContainerApps.Exercise201.Api
+      dockerfile: Dockerfile
+    image: azure-container-apps-exercise-201-api:latest
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8080' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s

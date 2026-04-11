@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/exercises/" />
+  <Folder Name="/exercises/chapter-01/" />
+  <Folder Name="/exercises/chapter-01/exercise-101/">
+    <Project Path="exercises/chapter-01/exercise-101/AzureContainerApps.Exercise101/AzureContainerApps.Exercise101.csproj" />
+  </Folder>
+  <Folder Name="/exercises/chapter-01/exercise-102/">
+    <Project Path="exercises/chapter-01/exercise-102/AzureContainerApps.Exercise102/AzureContainerApps.Exercise102.csproj" />
+  </Folder>
+  <Folder Name="/exercises/chapter-02/" />
+  <Folder Name="/exercises/chapter-02/exercise-201/">
+    <Project Path="exercises/chapter-02/exercise-201/AzureContainerApps.Exercise201.Api/AzureContainerApps.Exercise201.Api.csproj" />
+    <Project Path="exercises/chapter-02/exercise-201/AzureContainerApps.Exercise201.Web/AzureContainerApps.Exercise201.Web.csproj" />
+  </Folder>
+  <Folder Name="/lab-project/" />
+  <Folder Name="/lab-project/lab-01/">
+    <Project Path="lab-project/lab-01/src/UltimateSnake.Frontend.Client/UltimateSnake.Frontend.Client.csproj" />
+    <Project Path="lab-project/lab-01/src/UltimateSnake.Frontend/UltimateSnake.Frontend.csproj" />
+  </Folder>
+</Solution>
