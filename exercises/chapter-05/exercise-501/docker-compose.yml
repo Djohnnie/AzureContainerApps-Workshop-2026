@@ -1,0 +1,34 @@
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"
+    command: azurite --loose --blobHost 0.0.0.0
+
+  web:
+    build:
+      context: .
+      dockerfile: AzureContainerApps.Exercise501.Web/Dockerfile
+    image: azure-container-apps-exercise-501-web:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - BLOB_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KgMeOQ==;BlobEndpoint=http://azurite:10000/devstoreaccount1;
+    depends_on:
+      - azurite
+
+  # Run once to seed a quote. Requires real Azure OpenAI credentials.
+  # Usage: docker compose run --rm quote-job
+  quote-job:
+    build:
+      context: ./AzureContainerApps.Exercise501.QuoteJob
+      dockerfile: Dockerfile
+    image: azure-container-apps-exercise-501-quote-job:latest
+    environment:
+      - BLOB_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KgMeOQ==;BlobEndpoint=http://azurite:10000/devstoreaccount1;
+      - AZURE_OPENAI_ENDPOINT=<your-azure-openai-endpoint>
+      - AZURE_OPENAI_API_KEY=<your-azure-openai-api-key>
+      - AZURE_OPENAI_MODEL_NAME=<your-azure-openai-model-name>
+    depends_on:
+      - azurite
+    restart: "no"

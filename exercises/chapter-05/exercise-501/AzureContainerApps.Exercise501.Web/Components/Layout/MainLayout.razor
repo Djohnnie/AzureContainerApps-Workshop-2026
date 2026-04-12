@@ -1,0 +1,43 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_theme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Style="background: #0d1117; border-bottom: 1px solid #21262d;">
+        <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Color="Color.Primary" Class="mr-2" />
+        <MudText Typo="Typo.h6" Style="color: #e6edf3; font-weight: 600;">
+            Quote of the Day
+        </MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.caption" Style="color: #484f58;">
+            Powered by Azure Container Jobs + Azure OpenAI
+        </MudText>
+    </MudAppBar>
+
+    <MudMainContent>
+        <div style="min-height: calc(100vh - 64px); background: linear-gradient(160deg, #0d1117 0%, #0d1117 60%, #0f1923 100%);
+                    display: flex; align-items: center; justify-content: center; padding: 2rem;">
+            @Body
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private readonly MudTheme _theme = new()
+    {
+        PaletteDark = new PaletteDark
+        {
+            Background = "#0d1117",
+            Surface = "#161b22",
+            Primary = "#4ade80",
+            TextPrimary = "#e6edf3",
+            TextSecondary = "#8b949e",
+            AppbarBackground = "#0d1117",
+            DrawerBackground = "#0d1117",
+            ActionDefault = "#8b949e",
+        }
+    };
+}

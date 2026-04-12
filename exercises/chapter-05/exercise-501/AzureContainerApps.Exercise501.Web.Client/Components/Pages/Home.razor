@@ -1,0 +1,87 @@
+@page "/"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@inject HttpClient Http
+
+<PageTitle>Quote of the Day</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudCard Elevation="8" Style="background: #161b22; border: 1px solid #30363d; border-radius: 16px;">
+        <MudCardContent Class="pa-8">
+            <div class="d-flex justify-center mb-6">
+                <MudIcon Icon="@Icons.Material.Filled.FormatQuote"
+                         Style="font-size: 4rem; color: #4ade80; opacity: 0.7;" />
+            </div>
+
+            @if (_loading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 120px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Warning" Class="mb-4" Style="background: #1c2128; border: 1px solid #d29922;">
+                    @_error
+                </MudAlert>
+            }
+            else if (_quote is not null)
+            {
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-6"
+                         Style="font-style: italic; color: #e6edf3; line-height: 1.6;">
+                    &ldquo;@_quote.Quote&rdquo;
+                </MudText>
+                <MudDivider Class="mb-4" Style="border-color: #30363d;" />
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Color="Color.Primary" Class="mb-2">
+                    &mdash; @_quote.Author
+                </MudText>
+                <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #8b949e; display: block;">
+                    Generated @_quote.GeneratedAt.ToLocalTime().ToString("f")
+                </MudText>
+            }
+        </MudCardContent>
+
+        <MudCardActions Class="justify-center pb-6">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="LoadQuote"
+                       Disabled="_loading"
+                       Style="border-radius: 8px;">
+                Refresh Quote
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-4"
+             Style="color: #484f58; display: block;">
+        Quotes are generated every minute by an Azure Container Job using Azure OpenAI
+    </MudText>
+</MudContainer>
+
+@code {
+    private QuoteDto? _quote;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadQuote();
+
+    private async Task LoadQuote()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _quote = await Http.GetFromJsonAsync<QuoteDto>("/api/quote");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not load today's quote: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    record QuoteDto(string Quote, string Author, DateTimeOffset GeneratedAt);
+}
