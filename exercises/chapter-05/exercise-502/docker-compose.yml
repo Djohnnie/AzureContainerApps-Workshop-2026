@@ -1,0 +1,44 @@
+services:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: azurite --loose --blobHost 0.0.0.0
+    ports:
+      - "10000:10000"
+    volumes:
+      - azurite-data:/data
+
+  web:
+    build:
+      context: .
+      dockerfile: AzureContainerApps.Exercise502.Web/Dockerfile
+    image: azure-container-apps-exercise-502-web:latest
+    ports:
+      - "5002:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      BLOB_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KgMeOQ==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+      # Leave empty to disable Service Bus POST /api/quote/request in local dev
+      SERVICE_BUS_CONNECTION_STRING: ""
+      SERVICE_BUS_QUEUE_NAME: "quote-requests"
+    depends_on:
+      - azurite
+
+  quote-job:
+    build:
+      context: AzureContainerApps.Exercise502.QuoteJob
+      dockerfile: Dockerfile
+    image: azure-container-apps-exercise-502-quote-job:latest
+    profiles:
+      - job
+    environment:
+      BLOB_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KgMeOQ==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+      # Use QUOTE_THEME to bypass Service Bus in local dev (Azurite has no Service Bus support)
+      QUOTE_THEME: "resilience"
+      AZURE_OPENAI_ENDPOINT: "${AZURE_OPENAI_ENDPOINT}"
+      AZURE_OPENAI_API_KEY: "${AZURE_OPENAI_API_KEY}"
+      AZURE_OPENAI_MODEL_NAME: "${AZURE_OPENAI_MODEL_NAME}"
+    depends_on:
+      - azurite
+
+volumes:
+  azurite-data:

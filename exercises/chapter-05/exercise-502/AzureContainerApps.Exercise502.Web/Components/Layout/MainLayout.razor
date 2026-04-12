@@ -1,0 +1,38 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_theme" IsDarkMode="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Color="Color.Dark" Elevation="2" Dense="true">
+        <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Class="mr-2" Color="Color.Primary" />
+        <MudText Typo="Typo.h6" Style="font-weight: 600; letter-spacing: 0.05em;">
+            Azure Container Jobs — Exercise 502
+        </MudText>
+        <MudSpacer />
+        <MudText Typo="Typo.caption" Style="color: #8b949e;">Event-triggered Job</MudText>
+    </MudAppBar>
+
+    <MudMainContent Class="mt-16 pa-6">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight { Black = "#0d1117" },
+        PaletteDark = new PaletteDark
+        {
+            Background = "#0d1117",
+            Surface = "#161b22",
+            Primary = "#4ade80",
+            AppbarBackground = "#161b22",
+            DrawerBackground = "#161b22",
+            TextPrimary = "#e6edf3",
+            TextSecondary = "#8b949e",
+        }
+    };
+}

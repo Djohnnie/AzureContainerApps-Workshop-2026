@@ -1,0 +1,216 @@
+@page "/"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@implements IDisposable
+@inject HttpClient Http
+
+<PageTitle>Quote of the Day</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+
+    @* ── Request card ── *@
+    <MudCard Elevation="4" Style="background: #161b22; border: 1px solid #30363d; border-radius: 16px;" Class="mb-4">
+        <MudCardContent Class="pa-6">
+            <MudText Typo="Typo.subtitle1" Style="color: #8b949e;" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.AutoAwesome" Size="Size.Small" Class="mr-1" Style="color: #4ade80;" />
+                Ask for a quote on any theme
+            </MudText>
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                <MudTextField @bind-Value="_theme"
+                              Label="Theme"
+                              Placeholder="e.g. resilience, friendship, creativity…"
+                              Variant="Variant.Outlined"
+                              Style="background: #0d1117; border-radius: 8px;"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Tag"
+                              AdornmentColor="Color.Primary"
+                              Disabled="_sending"
+                              OnKeyUp="OnThemeKeyUp"
+                              FullWidth="true" />
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Send"
+                           OnClick="RequestQuote"
+                           Disabled="_sending || string.IsNullOrWhiteSpace(_theme)"
+                           Style="border-radius: 8px; min-width: 140px; height: 56px;">
+                    @if (_sending)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Sending…</span>
+                    }
+                    else
+                    {
+                        <span>Generate</span>
+                    }
+                </MudButton>
+            </MudStack>
+
+            @if (_sendSuccess)
+            {
+                <MudAlert Severity="Severity.Success" Class="mt-3" Dense="true"
+                          Style="background: #0f2e1a; border: 1px solid #238636;">
+                    Request sent! The quote will update automatically.
+                </MudAlert>
+            }
+            @if (_sendError is not null)
+            {
+                <MudAlert Severity="Severity.Error" Class="mt-3" Dense="true">@_sendError</MudAlert>
+            }
+        </MudCardContent>
+    </MudCard>
+
+    @* ── Quote card ── *@
+    <MudCard Elevation="8" Style="background: #161b22; border: 1px solid #30363d; border-radius: 16px;">
+        <MudCardContent Class="pa-8">
+            <div class="d-flex justify-center mb-6">
+                <MudIcon Icon="@Icons.Material.Filled.FormatQuote"
+                         Style="font-size: 4rem; color: #4ade80; opacity: 0.7;" />
+            </div>
+
+            @if (_loading)
+            {
+                <div class="d-flex justify-center align-center" style="min-height: 120px;">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+                </div>
+            }
+            else if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Warning" Class="mb-4" Style="background: #1c2128; border: 1px solid #d29922;">
+                    @_error
+                </MudAlert>
+            }
+            else if (_quote is not null)
+            {
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-6"
+                         Style="font-style: italic; color: #e6edf3; line-height: 1.6;">
+                    &ldquo;@_quote.Quote&rdquo;
+                </MudText>
+                <MudDivider Class="mb-4" Style="border-color: #30363d;" />
+                <MudText Typo="Typo.subtitle1" Align="Align.Center" Color="Color.Primary" Class="mb-2">
+                    &mdash; @_quote.Author
+                </MudText>
+                <MudText Typo="Typo.caption" Align="Align.Center" Style="color: #8b949e; display: block;">
+                    Generated @_quote.GeneratedAt.ToLocalTime().ToString("f")
+                </MudText>
+            }
+        </MudCardContent>
+
+        <MudCardActions Class="justify-center pb-6">
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Refresh"
+                       OnClick="() => LoadQuote(showLoading: true)"
+                       Disabled="_loading"
+                       Style="border-radius: 8px;">
+                Refresh Now
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+    <MudText Typo="Typo.caption" Align="Align.Center" Class="mt-4"
+             Style="color: #484f58; display: block;">
+        Auto-refreshes in @_countdown s &nbsp;·&nbsp; Powered by Azure Container Jobs + Azure OpenAI
+    </MudText>
+</MudContainer>
+
+@code {
+    private QuoteDto? _quote;
+    private bool _loading = true;
+    private string? _error;
+
+    private string _theme = string.Empty;
+    private bool _sending;
+    private bool _sendSuccess;
+    private string? _sendError;
+
+    private int _countdown = 10;
+    private Timer? _refreshTimer;
+    private Timer? _countdownTimer;
+
+    private const int RefreshIntervalSeconds = 10;
+
+    protected override async Task OnInitializedAsync() => await LoadQuote(showLoading: true);
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _refreshTimer = new Timer(async _ =>
+            {
+                _countdown = RefreshIntervalSeconds;
+                await LoadQuote(showLoading: false);
+                await InvokeAsync(StateHasChanged);
+            }, null, TimeSpan.FromSeconds(RefreshIntervalSeconds), TimeSpan.FromSeconds(RefreshIntervalSeconds));
+
+            _countdownTimer = new Timer(_ =>
+            {
+                if (_countdown > 0) _countdown--;
+                InvokeAsync(StateHasChanged);
+            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task LoadQuote(bool showLoading)
+    {
+        if (showLoading)
+        {
+            _loading = true;
+            _error = null;
+        }
+        try
+        {
+            _quote = await Http.GetFromJsonAsync<QuoteDto>("/api/quote");
+            _error = null;
+        }
+        catch (Exception ex)
+        {
+            if (showLoading) _error = $"Could not load quote: {ex.Message}";
+        }
+        finally
+        {
+            if (showLoading) _loading = false;
+        }
+    }
+
+    private async Task RequestQuote()
+    {
+        if (string.IsNullOrWhiteSpace(_theme)) return;
+        _sending = true;
+        _sendError = null;
+        _sendSuccess = false;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/api/quote/request", new { Theme = _theme });
+            if (response.IsSuccessStatusCode)
+            {
+                _sendSuccess = true;
+                _theme = string.Empty;
+            }
+            else
+            {
+                _sendError = $"Request failed ({(int)response.StatusCode}). Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _sendError = ex.Message;
+        }
+        finally
+        {
+            _sending = false;
+        }
+    }
+
+    private async Task OnThemeKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await RequestQuote();
+    }
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+        _countdownTimer?.Dispose();
+    }
+
+    record QuoteDto(string Quote, string Author, DateTimeOffset GeneratedAt);
+}

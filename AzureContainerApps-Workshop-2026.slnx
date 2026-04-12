@@ -49,6 +49,11 @@
     <Project Path="exercises/chapter-05/exercise-501/AzureContainerApps.Exercise501.Web.Client/AzureContainerApps.Exercise501.Web.Client.csproj" />
     <Project Path="exercises/chapter-05/exercise-501/AzureContainerApps.Exercise501.QuoteJob/AzureContainerApps.Exercise501.QuoteJob.csproj" />
   </Folder>
+  <Folder Name="/exercises/chapter-05/exercise-502/">
+    <Project Path="exercises/chapter-05/exercise-502/AzureContainerApps.Exercise502.Web/AzureContainerApps.Exercise502.Web.csproj" />
+    <Project Path="exercises/chapter-05/exercise-502/AzureContainerApps.Exercise502.Web.Client/AzureContainerApps.Exercise502.Web.Client.csproj" />
+    <Project Path="exercises/chapter-05/exercise-502/AzureContainerApps.Exercise502.QuoteJob/AzureContainerApps.Exercise502.QuoteJob.csproj" />
+  </Folder>
   <Folder Name="/lab-project/" />
   <Folder Name="/lab-project/lab-01/">
     <Project Path="lab-project/lab-01/src/UltimateSnake.AppHost/UltimateSnake.AppHost.csproj" />
